@@ -50,6 +50,7 @@ music_clean <- preprocess(music_raw)
 #check
 tail(music_clean,n=10)
 
+
 #step 5
 # (a) Create a vector containing each unique symbol
 notes <- unique(music_clean)
@@ -60,8 +61,10 @@ tokens <- match(music_clean, notes)
 # Check
 length(tokens) == length(music_clean)
 
+
 #step6
 make_matrix <- function(tokens, end, mlag = 4) {
+  # (a) Create the sequence matrix
   n <- length(tokens)
   M <- matrix(NA,
               nrow = n - mlag,
@@ -71,15 +74,18 @@ make_matrix <- function(tokens, end, mlag = 4) {
     M[i, ] <- tokens[i:(i + mlag)]
   }
   
+  # (b) Remove rows containing end in the history
   M <- M[rowSums(M[, 1:mlag] == end) == 0, ]
   
   return(M)
 }
 
 #check
-end <- match("||", notes)
-M <- make_matrix(tokens, end)
+M <- make_matrix(
+  tokens = tokens,
+  end = which(notes == "||"),
+  mlag = 4
+)
+
 dim(M)
-any(M[, 1:4] == end)
-head(M)
-tail(M)
+any(M[, 1:4] == which(notes == "||"))
