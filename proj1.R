@@ -49,3 +49,37 @@ music_clean <- preprocess(music_raw)
 
 #check
 tail(music_clean,n=10)
+
+#step 5
+# (a) Create a vector containing each unique symbol
+notes <- unique(music_clean)
+
+# (b) Convert each element in music_clean into its corresponding
+tokens <- match(music_clean, notes)
+
+# Check
+length(tokens) == length(music_clean)
+
+#step6
+make_matrix <- function(tokens, end, mlag = 4) {
+  n <- length(tokens)
+  M <- matrix(NA,
+              nrow = n - mlag,
+              ncol = mlag + 1)
+  
+  for (i in 1:(n - mlag)) {
+    M[i, ] <- tokens[i:(i + mlag)]
+  }
+  
+  M <- M[rowSums(M[, 1:mlag] == end) == 0, ]
+  
+  return(M)
+}
+
+#check
+end <- match("||", notes)
+M <- make_matrix(tokens, end)
+dim(M)
+any(M[, 1:4] == end)
+head(M)
+tail(M)
