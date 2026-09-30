@@ -11,7 +11,7 @@
 
 #setwd("~/Desktop/statistical programming/p1/Assignment01_Group10")
 #setwd("/Users/tianjiuye/ORDS/session1/optional/SP（R）/Practical-1")
-setwd("/Users/yolaaaaaa/Documents/PGT/Statistical_Programming/Assignment01_Group10")
+#setwd("/Users/yolaaaaaa/Documents/PGT/Statistical_Programming/Assignment01_Group10")
 music_raw <- readLines("palestrina.txt")
 tail(head(music_raw,n=20),n=10)
 
@@ -161,3 +161,41 @@ key <- as.vector(M[1, seq_len(mlag)])
 mc <- mlag - length(key) + 1
 
 next_note(key, M)
+
+
+#step8
+generate_music <- function(start, M, w = rep(1, ncol(M) - 1), notes) {
+  
+  music <- c(start)
+  end <- which(notes == "||")
+  bar <- which(notes == "|")
+  
+  while (!(end %in% music) &&
+         sum(music == bar) < 8 &&
+         length(music) < 200) {
+    
+    next_token <- next_note(music, M, w)
+    music <- c(music, next_token)
+  }
+  
+  music <- notes[music]
+  return(paste(music, collapse = " "))
+}
+
+#check
+w1 <- c(1, 1, 1, 1)
+w2 <- c(1, 0, 0, 0)
+w3 <- c(0, 0, 0, 1)
+sim_music1 <- generate_music(start = 20, M = M, notes = notes, w = w1)
+sim_music2 <- generate_music(start = 20, M = M, notes = notes, w = w2)
+sim_music3 <- generate_music(start = 20, M = M, notes = notes, w = w3)
+
+sim_music1
+sim_music2
+sim_music3
+
+
+source("play_music.r")
+play(str_to_waveform(sim_music1))
+play(str_to_waveform(sim_music2))
+
