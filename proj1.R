@@ -11,6 +11,7 @@
 
 #setwd("~/Desktop/statistical programming/p1/Assignment01_Group10")
 #setwd("/Users/tianjiuye/ORDS/session1/optional/SP（R）/Practical-1")
+setwd("/Users/yolaaaaaa/Documents/PGT/Statistical_Programming/Assignment01_Group10")
 music_raw <- readLines("palestrina.txt")
 tail(head(music_raw,n=20),n=10)
 
@@ -89,3 +90,74 @@ M <- make_matrix(
 
 dim(M)
 any(M[, 1:4] == which(notes == "||"))
+
+#step7
+
+# Sample the next token
+# M: history columns + a final next-token column
+# w[j]: mixture weight for order j 
+next_note <- function(key, M, w = rep(1, ncol(M) - 1)) {
+  mlag <- ncol(M) - 1
+  nr <- nrow(M)
+  key <- tail(key, mlag) # Keep only the latest tokens
+  probability <- numeric(nr) # Accumulate sampling weights for each row
+  if (any(w > 0)) {
+    w <- w / max(w)
+  }
+  
+  # Use suffixes of length 1 up to length(key)
+  for (j in seq_len(length(key))) {
+    
+    # Select the current suffix and corresponding history columns
+    current_key <- tail(key, j)
+    mc <- mlag - j + 1
+    
+    # Count mismatches in each row; zero means a complete match
+    ii <- colSums(
+      !(t(M[, mc:mlag, drop = FALSE]) == current_key)
+    )
+    
+    matched <- which(ii == 0)
+    count <- length(matched)
+    
+    # No longer suffix can match if this suffix has no matches
+    if (count == 0) {
+      break
+    }
+    
+    if (w[j] > 0) {
+      probability[matched] <-
+        probability[matched] + w[j] / count
+    }
+  }
+
+  candidates <- which(probability > 0) # Select rows with positive weight 
+  
+  if (length(candidates) == 0) {
+    
+    # Fallback: sample uniformly across all rows
+    candidates <- seq_len(nr)
+    probs <- NULL
+    
+  } else {
+    probs <- probability[candidates]
+  }
+  
+  # A single candidate needs no random sampling
+  if (length(candidates) == 1) {
+    return(M[candidates, mlag + 1])
+  }
+  chosen <- sample(
+    seq_along(candidates),
+    size = 1,
+    prob = probs
+  )
+  M[candidates[chosen], mlag + 1]
+}
+
+#check
+mlag <- ncol(M) - 1
+key <- as.vector(M[1, seq_len(mlag)])
+mc <- mlag - length(key) + 1
+
+next_note(key, M)
